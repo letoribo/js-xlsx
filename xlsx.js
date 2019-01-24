@@ -3599,7 +3599,8 @@ function sheet_add_aoa(_ws, data, opts) {
 			if(range.e.c < __C) range.e.c = __C;
 			if(data[R][C] && typeof data[R][C] === 'object' && !Array.isArray(data[R][C]) && !(data[R][C] instanceof Date)) cell = data[R][C];
 			else {
-				if(Array.isArray(cell.v)) { cell.f = data[R][C][1]; cell.v = cell.v[0]; }
+				//if(Array.isArray(cell.v)) { cell.f = data[R][C][1]; cell.v = cell.v[0]; }
+				if(Array.isArray(cell.v)) { cell.f = JSON.stringify(data[R][C]); cell.v = JSON.stringify(data[R][C]); }
 				if(cell.v === null) { if(cell.f) cell.t = 'n'; else if(!o.cellStubs) continue; else cell.t = 'z'; }
 				else if(typeof cell.v === 'number') cell.t = 'n';
 				else if(typeof cell.v === 'boolean') cell.t = 'b';
@@ -20477,6 +20478,16 @@ function writeFileAsync(filename, wb, opts, cb) {
 	var _cb = cb; if(!(_cb instanceof Function)) _cb = (opts);
 	return _fs.writeFile(filename, writeSync(wb, o), _cb);
 }
+
+function isJson(str) {
+	try {
+		JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
+}
+
 function make_json_row(sheet, r, R, cols, header, hdr, dense, o) {
 	var rr = encode_row(R);
 	var defval = o.defval, raw = o.raw || !o.hasOwnProperty("raw");
@@ -20506,6 +20517,7 @@ function make_json_row(sheet, r, R, cols, header, hdr, dense, o) {
 				else if(raw && v === null) row[hdr[C]] = null;
 				else continue;
 			} else {
+				v = isJson(v) ? JSON.parse(v) : v;
 				row[hdr[C]] = raw ? v : format_cell(val,v,o);
 			}
 			if(v != null) isempty = false;
